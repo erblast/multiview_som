@@ -1,0 +1,4 @@
+"0","data_sum = data_pred_tree %>%"
+"0","  summarise( prop = sum(pred_true)/n()"
+"0","             ,n   = n() ) "
+"0","data_sum"

@@ -1,0 +1,8 @@
+"0","# data = ISLR::Auto %>%"
+"0","#   select(-name) %>%"
+"0","#   mutate(origin = as.factor(origin) )"
+"0","data = diamonds "
+"0","map_dimension = 20"
+"0","n_iterations = 1000"
+"0","recalculate_map = F"
+"0","recalculate_no_clusters = F"

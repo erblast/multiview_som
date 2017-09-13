@@ -1,0 +1,6 @@
+"0","require(tidyverse)"
+"0","require(magrittr)"
+"0","setwd('C:\\Users\\erbla\\OneDrive\\R\\SOM')"
+"0","#source('hclust R Version.R')"
+"0","# Colour palette definition"
+"0","pretty_palette = RColorBrewer::brewer.pal(12,'Paired')"
