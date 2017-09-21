@@ -52,6 +52,17 @@ library(e1071)
 qual_col_pals  = RColorBrewer::brewer.pal.info[RColorBrewer::brewer.pal.info$category == 'qual',]
 color_pallette = unlist(mapply(RColorBrewer::brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
 
+# the SOM MAP will display a correlative distance plot for each map segment
+# in red, we therefore cannot use any reddish colouring in our pallette
+
+color_pallette = color_pallette %>%
+  col2rgb() %>%
+  t() %>%
+  as.data.frame() %>%
+  filter( red < 225 | green > 50 | blue < 125 ) %>%
+  mutate( hex = pmap( list(red, green, blue), rgb, maxColorValue = 255 ) )%>%
+  unnest( hex ) %>%
+  .$hex
 
 
 source( stringr::str_c(getwd(),'/mod_load_data v03.R') )
@@ -62,11 +73,11 @@ source( stringr::str_c(getwd(), '/mod_clean_data v05.R') )
 
 source( stringr::str_c(getwd(), '/mod_som_map_v02.R') )
 
-source( stringr::str_c(getwd(), '/mod_som_cluster_v02.R') )
+source( stringr::str_c(getwd(), '/mod_som_cluster_v03.R') )
 
 source( stringr::str_c(getwd(), '/mod_vis_groups_v03.R') )
 
-source( stringr::str_c(getwd(), '/mod_tree_v03.R') )
+source( stringr::str_c(getwd(), '/mod_tree_v04.R') )
 
 source( stringr::str_c(getwd(), '/mod_save_v01.R') )
 
@@ -98,14 +109,14 @@ status$tree     = 'Ready'
 
 
 
-renderText(status$load)
-renderText(status$summary)
-renderText(status$clean)
-renderText(status$ana)
-renderText(status$som)
-renderText(status$est_exec_time)
-renderText(status$map_trained)
-renderText(status$map_loaded)
+# renderText(status$load)
+# renderText(status$summary)
+# renderText(status$clean)
+# renderText(status$ana)
+# renderText(status$som)
+# renderText(status$est_exec_time)
+# renderText(status$map_trained)
+# renderText(status$map_loaded)
 #renderText(status$tree)
 
 
@@ -232,8 +243,6 @@ rea_som = mod_load_map_rea(rea_trained_som
 ```
 
 
-##Expand Map
-
 ##Vis Map
 
 ```{r}
@@ -269,6 +278,7 @@ mod_som_cluster_ui(input)
 
 rea_clust = mod_som_cluster_rea(input
                                , status
+                               , store
                                , rea_som
                                , rea_dist
                                )
@@ -276,16 +286,22 @@ renderText(status$clust)
 
 mod_som_cluster_man_change_cluster_UI( input )
 
-rea_clust_mod = mod_som_cluster_man_change_cluster_rea( input, rea_clust )
+store = mod_som_store_rea()
 
+rea_clust_mod = mod_som_cluster_man_change_cluster_rea( input, store, rea_clust )
 
 mod_som_cluster_plot(input
+                     , color_pallette
                      , rea_clust_mod
                      , rea_som)
 
-
-renderPrint(rea_clust()$clust)
-renderPrint(rea_clust_mod()$clust)
+# renderPrint( input$but_clust == 0 )
+# renderPrint( input$but_clust )
+# renderPrint( input$but_assign_clust )
+# renderPrint( store$but_clust )
+# renderPrint( store$map_loc )
+# renderPrint( store$assign_clust )
+# renderPrint(rea_clust_mod()$clust)
 
 ```
 
@@ -309,6 +325,12 @@ mod_vis_groups_render_categoricals(input, rea_new_data, color_pallette = color_p
 
 ```{r}
 
+# DT::renderDataTable({
+#   
+#   rea_new_data()$data
+#   
+# })
+
 mod_tree_UI(input, status, rea_new_data )
 
 rea_tree = mod_tree_rea(input, status, rea_new_data)
@@ -327,7 +349,9 @@ mod_tree_prune_plot(input, rea_tree, rea_new_data)
 
 ```{r}
 
+
 mod_save(input, rea_new_data)
+
 
 ```
 

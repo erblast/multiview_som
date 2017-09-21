@@ -356,7 +356,7 @@ mod_som_map_plot = function(input, rea_som){
       m = rea_som()$m
       whatmap = input$codes
       
-      if( length(whatmap) == 1 ){
+      if( length(m$codes) == 1 ){
         whatmap = NULL
       }
       

@@ -106,6 +106,7 @@ mod_som_cluster_ui = function(input){
 
 mod_som_cluster_rea = function(input
                                , status
+                               , store
                                , rea_som
                                , rea_dist
                                ){
@@ -115,7 +116,10 @@ mod_som_cluster_rea = function(input
     
     withProgress( message = 'Performing Clustering'
                   ,{
-    
+      
+      store$assign_clust = NULL
+      store$map_loc      = NULL
+      
       dist_adj      = rea_dist()
       map           = rea_som()$map
       grid          = rea_som()$grid
@@ -190,7 +194,7 @@ mod_som_cluster_man_change_cluster_UI = function( input ){
       , numericInput('assign_clust'
                      , 'Cluster No to assign'
                      , min   = 1
-                     , max   = input$no_clust
+                     , max   = 100
                      , value = 1
                      )
       , actionButton( 'but_assign_clust'
@@ -200,16 +204,27 @@ mod_som_cluster_man_change_cluster_UI = function( input ){
   })
 }
 
-
-
-mod_som_cluster_man_change_cluster_rea = function( input, status, rea_clust){
+mod_som_store_rea = function(){
   
-  eventReactive(input$but_assign_clust
-                ,{
+  reactiveValues( data = NULL )
+  
+}
+
+mod_som_cluster_man_change_cluster_rea = function( input, store, rea_clust){
+  
+  eventReactive({
+                  input$but_assign_clust
+                  input$but_clust
+                },{
     
-    # we want the code to run when the event is initialised 
-    # but not to modify any clusters
-    if( is.null( input$but_assign_clust ) ){
+    # we dont want to make changes if but_clust is pressed
+    # only when but_assign_clust is pressed      
+    
+    if( is.null(store$but_clust) ) store$but_clust = 0              
+                  
+    if(  input$but_assign_clust == 0 | input$but_clust > store$but_clust ){
+      
+      store$but_clust = as.integer( input$but_clust )
       return( rea_clust() )
     }             
     
@@ -230,12 +245,21 @@ mod_som_cluster_man_change_cluster_rea = function( input, status, rea_clust){
     # function is called, otherwise we loose them because we always start with 
     # the freshly clustered data from rea_clust
     
+    store$map_loc      = c( store$map_loc, map_loc )
+    store$assign_clust = c( store$assign_clust, input$assign_clust )
     
     
-    data = data %>%
-      mutate( cluster = ifelse( map_loc == map_loc, input$assign_clust, cluster ))
-    
-    clust[ map_loc ]  = input$assign_clust
+    for( i in 1 : length(store$assign_clust) ) {
+
+      # we have to assign the cluster in two different locations for storage
+      # data is used but for the map colorisation clust is used
+      
+      data = data %>%
+        mutate( cluster = ifelse( map_loc == store$map_loc[i], store$assign_clust, cluster ) )
+      
+      clust[ store$map_loc[i] ] = store$assign_clust
+      
+    }
     
     data_ls$data = data
     
@@ -244,7 +268,7 @@ mod_som_cluster_man_change_cluster_rea = function( input, status, rea_clust){
     
     return( clust_ls )
                   
-  }, ignoreNULL = T, ignoreInit = F)
+  }, ignoreNULL = F, ignoreInit = T)
   
 }
 

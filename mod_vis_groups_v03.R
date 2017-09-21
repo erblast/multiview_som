@@ -212,7 +212,7 @@ mod_vis_groups_render_no_obs = function(input, rea_data, color_pallette = NULL){
     group_var     = input$group_var_vis_gr
     data          = rea_data()$data
     
-    data[,group_var] = forcats::as_factor(data[[group_var]])
+    data[,group_var] = as.factor(data[[group_var]])
 
     p = ggplot(data, aes_string(x = group_var
                           , fill = group_var)
